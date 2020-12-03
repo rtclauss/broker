@@ -2,6 +2,6 @@
 
 @Library('MicroserviceBuilder') _
 microserviceBuilderPipeline {
-  image = 'portfolio'
+  image = 'broker'
   test = 'false'
 }

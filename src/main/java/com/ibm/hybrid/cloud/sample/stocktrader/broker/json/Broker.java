@@ -1,5 +1,5 @@
 /*
-       Copyright 2017-2019 IBM Corp All Rights Reserved
+       Copyright 2020 IBM Corp All Rights Reserved
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,61 +14,45 @@
    limitations under the License.
  */
 
-package com.ibm.hybrid.cloud.sample.stocktrader.portfolio.json;
+package com.ibm.hybrid.cloud.sample.stocktrader.broker.json;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.Id;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.json.JsonObject;
-import javax.json.bind.annotation.JsonbTransient;
-
 //JSON-P 1.0 (JSR 353).  This replaces my old usage of IBM's JSON4J (com.ibm.json.java.JSONObject)
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-@Entity
-@Table
-@NamedQuery(name = "Portfolio.findAll", query = "SELECT p FROM Portfolio p")
-/** JSON-B POJO class representing a Portfolio JSON object */
-public class Portfolio {
 
-    @Id
-    @Column(nullable = false, length = 32)
+/** JSON-B POJO class representing a Portfolio JSON object */
+public class Broker {
+    private static String UNKNOWN_STRING = "Unknown";
+    private static double UNKNOWN_DOUBLE = -1.0;
+    private static int    UNKNOWN_INT    = -1;
+
     private String owner;
     private double total;
-    @Column(length = 8)
     private String loyalty;
     private double balance;
     private double commissions;
     private int free;
     private String sentiment;
-    @Transient
     private double nextCommission;
-    @Transient
     JsonObject stocks;
 
-    @JsonbTransient
-    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL)
     private List<Stock> stockList = new ArrayList<Stock>();
 
-    public Portfolio() { //default constructor
+    public Broker() { //default constructor
     }
 
-    public Portfolio(String initialOwner) { //primary key constructor
+    public Broker(String initialOwner) { //primary key constructor
         setOwner(initialOwner);
     }
 
-    public Portfolio(String initialOwner, double initialTotal, String initialLoyalty, double initialBalance,
-                     double initialCommissions, int initialFree, String initialSentiment, double initialNextCommission) {
+    public Broker(String initialOwner, double initialTotal, String initialLoyalty, double initialBalance,
+                  double initialCommissions, int initialFree, String initialSentiment, double initialNextCommission) {
         setOwner(initialOwner);
         setTotal(initialTotal);
         setLoyalty(initialLoyalty);
@@ -77,6 +61,30 @@ public class Portfolio {
         setFree(initialFree);
         setSentiment(initialSentiment);
         setNextCommission(initialNextCommission);
+    }
+
+    public Broker(Portfolio portfolio, Account account) {
+        if (portfolio!=null) {
+            setOwner(portfolio.getOwner());
+            setTotal(portfolio.getTotal());
+            setStocks(portfolio.getStocks());
+        }
+
+        if (account!=null) {
+            setLoyalty(account.getLoyalty());
+            setBalance(account.getBalance());
+            setCommissions(account.getCommissions());
+            setFree(account.getFree());
+            setSentiment(account.getSentiment());
+            setNextCommission(account.getNextCommission());
+        } else {
+            setLoyalty(UNKNOWN_STRING);
+            setBalance(UNKNOWN_DOUBLE);
+            setCommissions(UNKNOWN_DOUBLE);
+            setFree(UNKNOWN_INT);
+            setSentiment(UNKNOWN_STRING);
+            setNextCommission(UNKNOWN_DOUBLE);
+        }
     }
 
     public String getOwner() {

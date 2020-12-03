@@ -1,7 +1,7 @@
 //Needed for basic Jenkins
 pipeline {
     environment {
-         componentName = "portfolio"
+         componentName = "broker"
          imagename = "${componentName}:demo"
     }
     

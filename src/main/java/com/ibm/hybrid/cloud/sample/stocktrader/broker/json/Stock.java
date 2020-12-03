@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package com.ibm.hybrid.cloud.sample.stocktrader.portfolio.json;
+package com.ibm.hybrid.cloud.sample.stocktrader.broker.json;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

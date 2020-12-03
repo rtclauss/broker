@@ -1,5 +1,5 @@
 <!--
-       Copyright 2017-2020 IBM Corp All Rights Reserved
+       Copyright 2020 IBM Corp All Rights Reserved
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
    limitations under the License.
 -->
 
-<server description="Portfolio server">
+<server description="Broker server">
     <featureManager>
         <feature>microProfile-3.3</feature>
         <feature>jdbc-4.2</feature>
@@ -114,7 +114,7 @@
         webAlwaysLogin="true" preserveFullyQualifiedReferrerUrl="true" trackLoggedOutSSOCookies="true" ssoCookieName="StockTraderSSO"
         useOnlyCustomCookieName="true" ssoUseDomainFromURL="true"/>
 
-    <webApplication id="Portfolio" name="Portfolio" location="Portfolio.war" contextRoot="/portfolio">
+    <webApplication id="Broker" name="Broker" location="Broker.war" contextRoot="/broker">
         <application-bnd>
             <security-role id="StockTrader" name="StockTrader">
                 <special-subject type="ALL_AUTHENTICATED_USERS" id="IBMid"/>

@@ -1,5 +1,5 @@
 /*
-       Copyright 2017 IBM Corp All Rights Reserved
+       Copyright 2020 IBM Corp All Rights Reserved
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package com.ibm.hybrid.cloud.sample.stocktrader.portfolio.json;
+package com.ibm.hybrid.cloud.sample.stocktrader.broker.json;
 
 /** JSON-B POJO class representing a Stock Purchase JSON object */
 public class StockPurchase {
