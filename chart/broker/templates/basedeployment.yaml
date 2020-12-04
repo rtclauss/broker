@@ -1,4 +1,4 @@
-#       Copyright 2017 IBM Corp All Rights Reserved
+#       Copyright 2020 IBM Corp All Rights Reserved
 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 #   limitations under the License.
 
 {{ if .Values.base.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "{{  .Chart.Name }}-basedeployment"
@@ -37,7 +37,7 @@ spec:
 {{ else }}
         readinessProbe:
           httpGet:
-            path: /portfolio/health
+            path: /health/ready
             port: 9080
           initialDelaySeconds: 20
 {{ end }}
