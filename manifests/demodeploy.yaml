@@ -1,4 +1,4 @@
-#       Copyright 2017 IBM Corp All Rights Reserved
+#       Copyright 2020 IBM Corp All Rights Reserved
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
 #   limitations under the License.
 
 #Deploy the pod
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: portfolio
+  name: broker
   labels:
     solution: stock-trader
   annotations: { 
@@ -27,14 +27,14 @@ spec:
   template:
     metadata:
       labels:
-        app: portfolio
+        app: broker
     spec:
       containers:
-      - name: portfolio
-#       image: portfolio:latest # Microservice Builder
-        image: bigloon.icp:8500/stock-trader/portfolio:demo # IBM Cloud Private
-#       image: registry.ng.bluemix.net/stock_trader/portfolio:latest # IBM Container Service
-#        image: ibmstocktrader/portfolio:latest # Docker Hub
+      - name: broker
+#       image: broker:latest # Microservice Builder
+        image: bigloon.icp:8500/stock-trader/broker:demo # IBM Cloud Private
+#       image: registry.ng.bluemix.net/stock_trader/broker:latest # IBM Container Service
+#        image: ibmstocktrader/broker:latest # Docker Hub
         env:
           - name: JDBC_HOST
             valueFrom:
@@ -177,8 +177,7 @@ spec:
         imagePullPolicy: Always
         readinessProbe:
           httpGet:
-            path: /portfolio/health/readiness
-            path: /health
+            path: /health/ready
             port: 9080
           initialDelaySeconds: 60
           periodSeconds: 10
@@ -186,8 +185,7 @@ spec:
           failureThreshold: 3
         livenessProbe:
           httpGet:
-            path: /portfolio/health/liveness
-            path: /health
+            path: /health/live
             port: 9080
           initialDelaySeconds: 90
           periodSeconds: 10
@@ -214,14 +212,14 @@ spec:
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: portfolio
+  name: broker
   labels:
     solution: stock-trader
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: portfolio
+    name: broker
   maxReplicas: 10
   minReplicas: 1
   targetCPUUtilizationPercentage: 50
@@ -230,9 +228,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: portfolio-service
+  name: broker-service
   labels:
-    app: portfolio
+    app: broker
     solution: stock-trader
 spec:
   type: NodePort
@@ -246,7 +244,7 @@ spec:
       port: 9443
       targetPort: 9443
   selector:
-    app: portfolio
+    app: broker
 ---   
 #Configure the ingress 
 apiVersion: extensions/v1beta1
@@ -258,7 +256,7 @@ metadata:
     ingress.kubernetes.io/session-cookie-name: "route"
     ingress.kubernetes.io/session-cookie-hash: "sha1"
     ingress.kubernetes.io/secure-backends: "true"
-    ingress.kubernetes.io/app-root: "/portfolio"
+    ingress.kubernetes.io/app-root: "/broker"
   name: portfolio-ingress
   labels:
     solution: stock-trader
@@ -267,7 +265,7 @@ spec:
   - host:
     http:
       paths:
-      - path: /portfolio
+      - path: /broker
         backend:
-          serviceName: portfolio-service
+          serviceName: broker-service
           servicePort: 9443
