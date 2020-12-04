@@ -1,4 +1,4 @@
-#       Copyright 2017-2019 IBM Corp All Rights Reserved
+#       Copyright 2020 IBM Corp All Rights Reserved
 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 apiVersion: v1
 kind: DeploymentConfig
 metadata:
-  name: portfolio
+  name: broker
   labels:
     app: stock-trader
   annotations:
@@ -29,24 +29,24 @@ spec:
       imageChangeParams:
         automatic: true
         containerNames:
-          - "portfolio"
+          - "broker"
         from:
           kind: "ImageStreamTag"
-          name: "portfolio:latest"
+          name: "broker:latest"
   template:
     metadata:
       labels:
-        app: portfolio
+        app: broker
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: "9080"
     spec:
       containers:
-      - name: portfolio
-#       image: portfolio:latest # Microservice Builder
-#       image: mycluster.icp:8500/stock-trader/portfolio:latest # IBM Cloud Private
-#       image: registry.ng.bluemix.net/stock_trader/portfolio:latest # IBM Kubernetes Service
-        image: image-registry.openshift-image-registry.svc:5000/stock-trader/portfolio:latest # Docker Hub
+      - name: broker
+#       image: broker:latest # Microservice Builder
+#       image: mycluster.icp:8500/stock-trader/broker:latest # IBM Cloud Private
+#       image: registry.ng.bluemix.net/stock_trader/broker:latest # IBM Kubernetes Service
+        image: image-registry.openshift-image-registry.svc:5000/stock-trader/broker:latest # Docker Hub
         env:
           - name: JDBC_HOST
             valueFrom:
@@ -252,7 +252,7 @@ spec:
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: portfolio-hpa
+  name: broker-hpa
   labels:
     solution: stock-trader
 spec:
@@ -268,9 +268,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: portfolio-service
+  name: broker-service
   labels:
-    app: portfolio
+    app: broker
     solution: stock-trader
   annotations:
     prometheus.io/scrape: "true"
@@ -286,4 +286,4 @@ spec:
       port: 9443
       targetPort: 9443
   selector:
-    app: portfolio
+    app: broker
