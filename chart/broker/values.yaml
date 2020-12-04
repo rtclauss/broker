@@ -1,4 +1,4 @@
-#       Copyright 2017 IBM Corp All Rights Reserved
+#       Copyright 2020 IBM Corp All Rights Reserved
 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 replicaCount: 1
 revisionHistoryLimit: 1
 image:
-  repository: portfolio
+  repository: broker
   tag: v1.0.0
   pullPolicy: IfNotPresent
   resources:
