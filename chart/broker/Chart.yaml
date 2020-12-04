@@ -1,4 +1,4 @@
-#       Copyright 2017 IBM Corp All Rights Reserved
+#       Copyright 2020 IBM Corp All Rights Reserved
 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -13,6 +13,6 @@
 #   limitations under the License.
 
 apiVersion: v1
-description: A Helm chart for the Portfolio microservice from IBM Stock Trader
-name: portfolio
+description: A Helm chart for the Broker microservice from IBM Stock Trader
+name: broker
 version: 1.0.0
