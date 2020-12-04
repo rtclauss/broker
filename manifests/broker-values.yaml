@@ -18,10 +18,10 @@
 ################################################################################################
 
 image:
-  # repository: portfolio # Microservice Builder
-  # repository: mycluster.icp:8500/stock-trader/portfolio # IBM Cloud Private
-  # repository: registry.ng.bluemix.net/stock_trader/portfolio # IBM Container Service
-  repository: ibmstocktrader/portfolio # Docker Hub
+  # repository: broker # Microservice Builder
+  # repository: mycluster.icp:8500/stock-trader/broker # IBM Cloud Private
+  # repository: registry.ng.bluemix.net/stock_trader/broker # IBM Container Service
+  repository: ibmstocktrader/broker # Docker Hub
   tag: latest
   pullPolicy: Always
   extraEnvs:
@@ -162,22 +162,22 @@ pod:
 
 service:
   enabled: true
-  name: portfolio-service
+  name: broker-service
   port: 9443
   targetPort: 9443
   type: NodePort
   extraPorts:
-    - name: portfolio-service-http
+    - name: broker-service-http
       protocol: TCP
       port: 9080
       targetPort: 9080
 
 ingress:
   enabled: true 
-  path: "/portfolio"
+  path: "/broker"
   annotations: 
-    ingress.kubernetes.io/app-root: "/portfolio"
-    nginx.ingress.kubernetes.io/app-root: "/portfolio"
+    ingress.kubernetes.io/app-root: "/broker"
+    nginx.ingress.kubernetes.io/app-root: "/broker"
 
 monitoring:
   enabled: true
