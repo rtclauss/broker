@@ -103,7 +103,7 @@ public class Account {
 
     public boolean equals(Object obj) {
         boolean isEqual = false;
-        if ((obj != null) && (obj instanceof Portfolio)) isEqual = toString().equals(obj.toString());
+        if ((obj != null) && (obj instanceof Account)) isEqual = toString().equals(obj.toString());
         return isEqual;
    }
 
