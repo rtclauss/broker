@@ -27,6 +27,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
@@ -50,7 +51,7 @@ public interface AccountClient {
 	@Path("/{owner}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Account getAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner);
+	public Account getAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("total") double total);
 
 	@POST
 	@Path("/{owner}")
@@ -62,7 +63,7 @@ public interface AccountClient {
 	@Path("/{owner}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Account updateAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner);
+	public Account updateAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("total") double total);
 
 	@DELETE
 	@Path("/{owner}")
