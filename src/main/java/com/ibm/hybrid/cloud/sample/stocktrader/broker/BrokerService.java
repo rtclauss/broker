@@ -192,10 +192,11 @@ public class BrokerService extends Application {
 
 		String answer = "broker";
 		if (portfolio!=null) {
+			double total = portfolio.getTotal();
 			Account account = null;
 			if (useAccount) {
 				logger.fine("Calling AccountClient.getAccount()");
-				account = accountClient.getAccount(jwt, owner);
+				account = accountClient.getAccount(jwt, owner, total);
 			}
 			broker = new Broker(portfolio, account);
 		} else {
@@ -241,10 +242,11 @@ public class BrokerService extends Application {
 
 		String answer = "broker";
 		if (portfolio!=null) {
+			double total = portfolio.getTotal();
 			Account account = null;
 			if (useAccount) {
 				logger.fine("Calling AccountClient.updateAccount()");
-				account = accountClient.updateAccount(jwt, owner);
+				account = accountClient.updateAccount(jwt, owner, total);
 			}
 			broker = new Broker(portfolio, account);
 		} else {
