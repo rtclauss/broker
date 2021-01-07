@@ -237,7 +237,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: portfolio
+    name: broker
   maxReplicas: 10
   minReplicas: 2
   targetCPUUtilizationPercentage: 60
@@ -265,7 +265,7 @@ spec:
       port: 9443
       targetPort: 9443
   selector:
-    app: portfolio
+    app: broker
 ---   
 #Configure the ingress 
 apiVersion: extensions/v1beta1
