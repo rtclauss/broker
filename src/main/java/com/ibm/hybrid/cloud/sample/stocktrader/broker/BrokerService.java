@@ -127,25 +127,42 @@ public class BrokerService extends Application {
 		logger.fine("Calling PortfolioClient.getPortfolios()");
 		Portfolio[] portfolios = portfolioClient.getPortfolios(jwt);
 
-		int count=0;
+		int portfolioCount=0;
 		Broker[] brokers = null;
 		if (portfolios!=null) {
-			count = portfolios.length;
+			portfolioCount = portfolios.length;
+			int accountCount=0;
 
-			brokers = new Broker[count];
-			Account[] accounts = new Account[count];
+			brokers = new Broker[portfolioCount];
+			Account[] accounts = new Account[portfolioCount];
 
-			if (useAccount) {
+			if (useAccount) try {
 				logger.fine("Calling AccountClient.getAccounts()");
-				accounts = accountClient.getAccounts(jwt); //TODO: will these be in the same order as the portfolios?
+				accounts = accountClient.getAccounts(jwt);
+				accountCount = accounts.length;
+			} catch (Throwable t) {
+				logException(t);
 			}
 
-			for (int index=0; index<count; index++) {
-				brokers[index] = new Broker(portfolios[index], accounts[index]);
+			//Since the accounts are likely not in the same order as the portfolios, need to match them up
+			//TODO: Consider making both use an "ORDER BY owner", so we don't have to do this
+			Portfolio portfolio = null;
+			for (int outerIndex=0; outerIndex<portfolioCount; outerIndex++) {
+				portfolio = portfolios[outerIndex];
+				String owner = portfolio.getOwner();
+				Account account = null;
+				for (int innerIndex=0; innerIndex<accountCount; innerIndex++) {
+					account = accounts[innerIndex];
+					if (owner.equals(account.getOwner())) {
+						brokers[outerIndex] = new Broker(portfolio, account);
+						break;
+					}
+				}
+				if (account==null) brokers[outerIndex] = new Broker(portfolio, null);
 			}
 		}
 
-		logger.fine("Returning "+count+" portfolios");
+		logger.fine("Returning "+portfolioCount+" portfolios");
 
 		return brokers;
 	}
@@ -165,9 +182,11 @@ public class BrokerService extends Application {
 		String answer = "broker";
 		if (portfolio!=null) {
 			Account account = null;
-			if (useAccount) {
+			if (useAccount) try {
 				logger.fine("Calling AccountClient.createAccount()");
 				account = accountClient.createAccount(jwt, owner);
+			} catch (Throwable t) {
+				logException(t);
 			}
 			broker = new Broker(portfolio, account);
 		} else {
@@ -194,9 +213,11 @@ public class BrokerService extends Application {
 		if (portfolio!=null) {
 			double total = portfolio.getTotal();
 			Account account = null;
-			if (useAccount) {
+			if (useAccount) try {
 				logger.fine("Calling AccountClient.getAccount()");
 				account = accountClient.getAccount(jwt, owner, total);
+			} catch (Throwable t) {
+				logException(t);
 			}
 			broker = new Broker(portfolio, account);
 		} else {
@@ -244,9 +265,11 @@ public class BrokerService extends Application {
 		if (portfolio!=null) {
 			double total = portfolio.getTotal();
 			Account account = null;
-			if (useAccount) {
+			if (useAccount) try {
 				logger.fine("Calling AccountClient.updateAccount()");
 				account = accountClient.updateAccount(jwt, owner, total);
+			} catch (Throwable t) {
+				logException(t);
 			}
 			broker = new Broker(portfolio, account);
 		} else {
@@ -272,9 +295,11 @@ public class BrokerService extends Application {
 		String answer = "broker";
 		if (portfolio!=null) {
 			Account account = null;
-			if (useAccount) {
+			if (useAccount) try {
 				logger.fine("Calling AccountClient.deleteAccount()");
 				account = accountClient.deleteAccount(jwt, owner);
+			} catch (Throwable t) {
+				logException(t);
 			}
 			broker = new Broker(portfolio, account);
 		} else {
