@@ -87,7 +87,8 @@ public class BrokerService extends Application {
 
 	// Override ODM Client URL if secret is configured to provide URL
 	static {
-		useAccount = Boolean.parseBoolean(System.getenv("USE_ACCOUNT"));
+		useAccount = Boolean.parseBoolean(System.getenv("ACCOUNT_ENABLED"));
+		logger.info("Account microservice enabled: " + useAccount);
 
 		String mpUrlPropName = PortfolioClient.class.getName() + "/mp-rest/url";
 		String urlFromEnv = System.getenv("PORTFOLIO_URL");
@@ -157,11 +158,12 @@ public class BrokerService extends Application {
 						brokers[outerIndex] = new Broker(portfolio, account);
 						break;
 					}
+					account = null;
 				}
 				if (account==null) brokers[outerIndex] = new Broker(portfolio, null);
 			}
 		}
-
+		
 		logger.fine("Returning "+portfolioCount+" portfolios");
 
 		return brokers;
