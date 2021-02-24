@@ -59,7 +59,7 @@ public interface PortfolioClient {
 	@PUT
 	@Path("/{owner}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Portfolio updatePortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("symbol") String symbol, @QueryParam("shares") int shares);
+	public Portfolio updatePortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("symbol") String symbol, @QueryParam("shares") int shares, @QueryParam("commission") double commission);
 
 	@DELETE
 	@Path("/{owner}")
