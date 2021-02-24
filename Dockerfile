@@ -24,10 +24,6 @@ RUN mvn -f /usr/pom.xml clean package
 
 FROM openliberty/open-liberty:kernel-slim-java11-openj9-ubi
 
-# Following line is a workaround for an issue where sometimes the server somehow loads the built-in server.xml,
-# rather than the one I copy into the image.  That shouldn't be possible, but alas, it appears to be some Docker bug.
-RUN rm /opt/ol/wlp/usr/servers/defaultServer/server.xml
-
 ARG extract_keycloak_cert
 USER root
 COPY src/main/liberty/config /opt/ol/wlp/usr/servers/defaultServer/
