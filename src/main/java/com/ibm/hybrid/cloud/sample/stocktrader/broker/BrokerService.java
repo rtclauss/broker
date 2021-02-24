@@ -74,6 +74,8 @@ import javax.ws.rs.Path;
 public class BrokerService extends Application {
 	private static Logger logger = Logger.getLogger(BrokerService.class.getName());
 
+	private static final double DONT_RECALCULATE = -1.0;
+
 	private static boolean useAccount = false;
 	private static boolean initialized = false;
 	private static boolean staticInitialized = false;
@@ -257,16 +259,26 @@ public class BrokerService extends Application {
 //	@RolesAllowed({"StockTrader"}) //Couldn't get this to work; had to do it through the web.xml instead :(
 	public Broker updateBroker(@PathParam("owner") String owner, @QueryParam("symbol") String symbol, @QueryParam("shares") int shares, @Context HttpServletRequest request) {
 		Broker broker = null;
+		Account account = null;
 		Portfolio portfolio = null;
 		String jwt = request.getHeader("Authorization");
 
+		double commission = 0.0;
+		if (useAccount) try {
+			logger.fine("Calling AccountClient.getAccount() to get commission in updateBroker()");
+			account = accountClient.getAccount(jwt, owner, DONT_RECALCULATE);
+			commission = account.getNextCommission();
+		} catch (Throwable t) {
+			logException(t);
+		}
+
 		logger.fine("Calling PortfolioClient.updatePortfolio()");
-		portfolio = portfolioClient.updatePortfolio(jwt, owner, symbol, shares);
+		portfolio = portfolioClient.updatePortfolio(jwt, owner, symbol, shares, commission);
 
 		String answer = "broker";
 		if (portfolio!=null) {
 			double total = portfolio.getTotal();
-			Account account = null;
+			account = null;
 			if (useAccount) try {
 				logger.fine("Calling AccountClient.updateAccount()");
 				account = accountClient.updateAccount(jwt, owner, total);
