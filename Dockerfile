@@ -1,4 +1,4 @@
-#       Copyright 2020 IBM Corp All Rights Reserved
+#       Copyright 2020-2021 IBM Corp All Rights Reserved
 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ FROM openliberty/open-liberty:kernel-slim-java11-openj9-ubi
 ARG extract_keycloak_cert
 USER root
 COPY src/main/liberty/config /opt/ol/wlp/usr/servers/defaultServer/
+
+#Workaround for https://github.com/OpenLiberty/ci.docker/issues/244
+RUN touch /config/server.xml
 
 # This script will add the requested XML snippets to enable Liberty features and grow image to be fit-for-purpose using featureUtility. 
 # Only available in 'kernel-slim'. The 'full' tag already includes all features for convenience.
