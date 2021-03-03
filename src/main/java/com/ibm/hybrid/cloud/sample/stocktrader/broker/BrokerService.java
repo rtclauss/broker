@@ -297,7 +297,7 @@ public class BrokerService extends Application {
 				logException(t);
 			}
 			broker = new Broker(portfolio, account);
-			if (useS3) logToS3(owner+"/"+symbol, broker);
+			if (useS3) logToS3(owner, broker);
 		} else {
 			answer = "null";
 		}
@@ -358,7 +358,6 @@ public class BrokerService extends Application {
 	private void logToS3(String key, Broker broker) {
 		try {
 			String bucketName = null;
-			Bucket bucket = null;
 
 			if (s3 == null) {
 				String region = System.getenv("S3_REGION");
@@ -366,10 +365,8 @@ public class BrokerService extends Application {
 				bucketName = System.getenv("S3_BUCKET");
 			}
 
-			if (s3.doesBucketExistV2(bucket) {
-				bucket = s3.getBucket(bucketName);
-			} else {
-				bucket = s3.createBucket(bucketName);
+			if (!s3.doesBucketExistV2(bucketName)) {
+				s3.createBucket(bucketName);
 			}
 			s3.putObject(bucketName, key, broker.toString());
 		} catch (AmazonS3Exception s3e) {
