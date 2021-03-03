@@ -1,5 +1,5 @@
 /*
-       Copyright 2020 IBM Corp All Rights Reserved
+       Copyright 2020-2021 IBM Corp All Rights Reserved
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,13 @@ import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Broker;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Feedback;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Portfolio;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.WatsonInput;
+
+//AWS S3 (wrapper for IBM Cloud Object Storage buckets)
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.Bucket;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -77,8 +84,10 @@ public class BrokerService extends Application {
 	private static final double DONT_RECALCULATE = -1.0;
 
 	private static boolean useAccount = false;
+	private static boolean useS3 = false;
 	private static boolean initialized = false;
 	private static boolean staticInitialized = false;
+	private static AmazonS3 s3 = null;
 
 	private @Inject @RestClient PortfolioClient portfolioClient;
 	private @Inject @RestClient AccountClient accountClient;
@@ -91,6 +100,8 @@ public class BrokerService extends Application {
 	static {
 		useAccount = Boolean.parseBoolean(System.getenv("ACCOUNT_ENABLED"));
 		logger.info("Account microservice enabled: " + useAccount);
+
+		useS3 = Boolean.parseBoolean(System.getenv("S3_ENABLED"));
 
 		String mpUrlPropName = PortfolioClient.class.getName() + "/mp-rest/url";
 		String urlFromEnv = System.getenv("PORTFOLIO_URL");
@@ -286,6 +297,7 @@ public class BrokerService extends Application {
 				logException(t);
 			}
 			broker = new Broker(portfolio, account);
+			if (useS3) logToS3(owner+"/"+symbol, broker);
 		} else {
 			answer = "null";
 		}
@@ -341,6 +353,28 @@ public class BrokerService extends Application {
 		logger.fine("Returning "+answer);
 
 		return feedback;
+	}
+
+	private void logToS3(String key, Broker broker) {
+		try {
+			String bucketName = null;
+			Bucket bucket = null;
+
+			if (s3 == null) {
+				String region = System.getenv("S3_REGION");
+				s3 = AmazonS3ClientBuilder.standard().withRegion(region).build(); //what about credentials?
+				bucketName = System.getenv("S3_BUCKET");
+			}
+
+			if (s3.doesBucketExistV2(bucket) {
+				bucket = s3.getBucket(bucketName);
+			} else {
+				bucket = s3.createBucket(bucketName);
+			}
+			s3.putObject(bucketName, key, broker.toString());
+		} catch (AmazonS3Exception s3e) {
+			logException(s3e);
+		}
 	}
 
 	static void logException(Throwable t) {
