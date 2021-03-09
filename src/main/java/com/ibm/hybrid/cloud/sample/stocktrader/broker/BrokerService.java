@@ -25,12 +25,6 @@ import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Feedback;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Portfolio;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.WatsonInput;
 
-//AWS S3 (wrapper for IBM Cloud Object Storage buckets)
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.Bucket;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -87,7 +81,6 @@ public class BrokerService extends Application {
 	private static boolean useS3 = false;
 	private static boolean initialized = false;
 	private static boolean staticInitialized = false;
-	private static AmazonS3 s3 = null;
 
 	private @Inject @RestClient PortfolioClient portfolioClient;
 	private @Inject @RestClient AccountClient accountClient;
@@ -297,7 +290,6 @@ public class BrokerService extends Application {
 				logException(t);
 			}
 			broker = new Broker(portfolio, account);
-			if (useS3) logToS3(owner, broker);
 		} else {
 			answer = "null";
 		}
@@ -353,25 +345,6 @@ public class BrokerService extends Application {
 		logger.fine("Returning "+answer);
 
 		return feedback;
-	}
-
-	private void logToS3(String key, Broker broker) {
-		try {
-			String bucketName = null;
-
-			if (s3 == null) {
-				String region = System.getenv("S3_REGION");
-				s3 = AmazonS3ClientBuilder.standard().withRegion(region).build(); //what about credentials?
-				bucketName = System.getenv("S3_BUCKET");
-			}
-
-			if (!s3.doesBucketExistV2(bucketName)) {
-				s3.createBucket(bucketName);
-			}
-			s3.putObject(bucketName, key, broker.toString());
-		} catch (AmazonS3Exception s3e) {
-			logException(s3e);
-		}
 	}
 
 	static void logException(Throwable t) {
