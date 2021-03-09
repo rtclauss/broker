@@ -207,7 +207,6 @@ public class Broker {
             currency.setMaximumFractionDigits(2);
             currency.setRoundingMode(RoundingMode.HALF_UP);
         }
-        System.out.println("stocks="+stocks);
 
         return "{\"owner\": \""+owner+"\", \"total\": "+currency.format(total)+", \"loyalty\": \""+loyalty
                +"\", \"balance\": "+currency.format(balance)+", \"commissions\": "+currency.format(commissions)
@@ -216,7 +215,6 @@ public class Broker {
     }
 
     private String getStocksJSON() {
-        System.out.println("Entering getStocksJSON");
         StringBuffer json = new StringBuffer();
         Iterator<String> keys = stocks.keySet().iterator();
 
@@ -229,7 +227,6 @@ public class Broker {
                 first = false;
             }
             String key = keys.next();
-            System.out.println("key="+key);
             JsonObject stock = stocks.getJsonObject(key);
 
             String symbol = stock.getString("symbol");
