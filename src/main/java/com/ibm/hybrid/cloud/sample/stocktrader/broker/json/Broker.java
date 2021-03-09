@@ -1,5 +1,5 @@
 /*
-       Copyright 2020 IBM Corp All Rights Reserved
+       Copyright 2017-2021 IBM Corp All Rights Reserved
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 
 package com.ibm.hybrid.cloud.sample.stocktrader.broker.json;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.Iterator;
 
 //JSON-P 1.0 (JSR 353).  This replaces my old usage of IBM's JSON4J (com.ibm.json.java.JSONObject)
 import javax.json.Json;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 
-/** JSON-B POJO class representing a Portfolio JSON object */
+/** JSON-B POJO class representing a Broker JSON object */
 public class Broker {
     private static String UNKNOWN_STRING = "Unknown";
     private static double UNKNOWN_DOUBLE = -1.0;
@@ -40,9 +41,10 @@ public class Broker {
     private int free;
     private String sentiment;
     private double nextCommission;
-    JsonObject stocks;
+    private JsonObject stocks;
+    private NumberFormat currency = null;
+    private static double ERROR = -1.0;
 
-    private List<Stock> stockList = new ArrayList<Stock>();
 
     public Broker() { //default constructor
     }
@@ -52,7 +54,7 @@ public class Broker {
     }
 
     public Broker(String initialOwner, double initialTotal, String initialLoyalty, double initialBalance,
-                  double initialCommissions, int initialFree, String initialSentiment, double initialNextCommission) {
+                     double initialCommissions, int initialFree, String initialSentiment, double initialNextCommission) {
         setOwner(initialOwner);
         setTotal(initialTotal);
         setLoyalty(initialLoyalty);
@@ -158,7 +160,7 @@ public class Broker {
     public void setStocks(JsonObject newStocks) {
         stocks = newStocks;
     }
-   
+
     public void addStock(Stock newStock) {
         if (newStock != null) {
             String symbol = newStock.getSymbol();
@@ -199,8 +201,51 @@ public class Broker {
    }
 
     public String toString() {
-        return "{\"owner\": \""+owner+"\", \"total\": "+total+", \"loyalty\": \""+loyalty+"\", \"balance\": "+balance
-               +", \"commissions\": "+commissions+", \"free\": "+free+", \"nextCommission\": "+nextCommission
-               +", \"sentiment\": \""+sentiment+"\", \"stocks\": "+(stocks!=null?stocks.toString():"{}")+"}";
+        if (currency == null) {
+            currency = NumberFormat.getNumberInstance();
+            currency.setMinimumFractionDigits(2);
+            currency.setMaximumFractionDigits(2);
+            currency.setRoundingMode(RoundingMode.HALF_UP);
+        }
+        System.out.println("stocks="+stocks);
+
+        return "{\"owner\": \""+owner+"\", \"total\": "+currency.format(total)+", \"loyalty\": \""+loyalty
+               +"\", \"balance\": "+currency.format(balance)+", \"commissions\": "+currency.format(commissions)
+               +", \"free\": "+free+", \"nextCommission\": "+currency.format(nextCommission)
+               +", \"sentiment\": \""+sentiment+"\", \"stocks\": "+(stocks!=null?getStocksJSON():"{}")+"}";
+    }
+
+    private String getStocksJSON() {
+        System.out.println("Entering getStocksJSON");
+        StringBuffer json = new StringBuffer();
+        Iterator<String> keys = stocks.keySet().iterator();
+
+        boolean first = true;
+        while (keys.hasNext()) {
+            if (first) {
+                json.append("{");
+            } else {
+                json.append(", ");
+                first = false;
+            }
+            String key = keys.next();
+            System.out.println("key="+key);
+            JsonObject stock = stocks.getJsonObject(key);
+
+            String symbol = stock.getString("symbol");
+            int shares = stock.getInt("shares");
+            JsonNumber number = stock.getJsonNumber("price");
+            double price = (number != null) ? number.doubleValue() : ERROR;
+            String date = stock.getString("date");
+            number = stock.getJsonNumber("total");
+            double totalValue = (number != null) ? number.doubleValue() : ERROR;
+            number = stock.getJsonNumber("commission");
+            double commission = (number != null) ? number.doubleValue() : ERROR;
+            
+            json.append("\"key\": {\"symbol\": \""+symbol+"\", \"shares\": "+shares+", \"price\": "+currency.format(price)
+                +", \"date\": \""+date+"\", \"total\": "+currency.format(totalValue)+", \"commission\": "+currency.format(commission)+"}");
+        }
+
+        return json.append("}").toString();
     }
 }
