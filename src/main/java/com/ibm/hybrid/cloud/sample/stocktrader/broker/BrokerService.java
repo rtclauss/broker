@@ -86,9 +86,6 @@ public class BrokerService extends Application {
 	private @Inject @RestClient AccountClient accountClient;
 	private @Inject @RestClient TradeHistoryClient tradeHistoryClient;
 
-	private @Inject @ConfigProperty(name = "KAFKA_TOPIC", defaultValue = "stocktrader") String kafkaTopic;
-	private @Inject @ConfigProperty(name = "KAFKA_ADDRESS", defaultValue = "") String kafkaAddress;
-
 	// Override ODM Client URL if secret is configured to provide URL
 	static {
 		useAccount = Boolean.parseBoolean(System.getenv("ACCOUNT_ENABLED"));
