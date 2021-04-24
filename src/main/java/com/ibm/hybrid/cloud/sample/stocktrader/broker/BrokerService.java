@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 //CDI 2.0
 import javax.inject.Inject;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 //mpConfig 1.3
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -67,7 +67,7 @@ import javax.ws.rs.Path;
 @ApplicationPath("/")
 @Path("/")
 @LoginConfig(authMethod = "MP-JWT", realmName = "jwt-jaspi")
-@RequestScoped //enable interceptors like @Transactional (note you need a WEB-INF/beans.xml in your war)
+@ApplicationScoped //enable interceptors like @Transactional (note you need a WEB-INF/beans.xml in your war)
 /** This microservice is the controller in a model-view-controller architecture, doing the routing and
  *  combination of results from other microservices.  Note that the Portfolio microservice it calls is
  *  mandatory, whereas the Account and TradeHistory microservices are optional.
