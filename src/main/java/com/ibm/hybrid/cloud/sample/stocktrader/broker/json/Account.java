@@ -19,6 +19,8 @@ package com.ibm.hybrid.cloud.sample.stocktrader.broker.json;
 
 /** JSON-B POJO class representing an Account JSON object */
 public class Account {
+    private String _id;
+    private String _rev;
     private String owner;
     private String loyalty;
     private double balance;
@@ -43,6 +45,22 @@ public class Account {
         setFree(initialFree);
         setSentiment(initialSentiment);
         setNextCommission(initialNextCommission);
+    }
+
+    public String get_id() {
+        return _id;
+    }
+
+    public void set_id(String new_id) {
+        _id = new_id;
+    }
+
+    public String get_rev() {
+        return _rev;
+    }
+
+    public void set_rev(String new_rev) {
+        _rev = new_rev;
     }
 
     public String getOwner() {
@@ -108,8 +126,8 @@ public class Account {
    }
 
     public String toString() {
-        return "{\"owner\": \""+owner+"\", \"loyalty\": \""+loyalty+"\", \"balance\": "+balance
-               +", \"commissions\": "+commissions+", \"free\": "+free+", \"nextCommission\": "+nextCommission
-               +", \"sentiment\": \""+sentiment+"\"}";
+        return "{\"_id\": \""+_id+"\", \"_rev\": \""+_rev+"\", \"owner\": \""+owner+"\", \"loyalty\": \""+loyalty
+               +"\", \"balance\": "+balance+", \"commissions\": "+commissions+", \"free\": "+free
+               +", \"nextCommission\": "+nextCommission+", \"sentiment\": \""+sentiment+"\"}";
     }
 }
