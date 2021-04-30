@@ -49,7 +49,7 @@ public interface PortfolioClient {
 	@POST
 	@Path("/{owner}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Portfolio createPortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner);
+	public Portfolio createPortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("accountID") String accountID);
 
 	@GET
 	@Path("/{owner}")
