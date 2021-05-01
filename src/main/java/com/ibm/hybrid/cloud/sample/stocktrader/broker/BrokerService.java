@@ -181,18 +181,21 @@ public class BrokerService extends Application {
 		Portfolio portfolio = null;
 		String jwt = request.getHeader("Authorization");
 
+		Account account = null;
+		String accountID = null;
+		if (useAccount) try {
+			logger.fine("Calling AccountClient.createAccount()");
+			account = accountClient.createAccount(jwt, owner);
+			if (account != null) accountID = account.get_id();
+		} catch (Throwable t) {
+			logException(t);
+		}
+
 		logger.fine("Calling PortfolioClient.createPortfolio()");
-		portfolio = portfolioClient.createPortfolio(jwt, owner);
+		portfolio = portfolioClient.createPortfolio(jwt, owner, accountID);
 
 		String answer = "broker";
-		if (portfolio!=null) {
-			Account account = null;
-			if (useAccount) try {
-				logger.fine("Calling AccountClient.createAccount()");
-				account = accountClient.createAccount(jwt, owner);
-			} catch (Throwable t) {
-				logException(t);
-			}
+		if (portfolio != null) {
 			broker = new Broker(portfolio, account);
 		} else {
 			answer = "null";
@@ -212,15 +215,16 @@ public class BrokerService extends Application {
 		String jwt = request.getHeader("Authorization");
 
 		logger.fine("Calling PortfolioClient.getPortfolio()");
-		portfolio = portfolioClient.getPortfolio(jwt, owner);
+		portfolio = portfolioClient.getPortfolio(jwt, owner, false);
 
 		String answer = "broker";
 		if (portfolio!=null) {
+			String accountID = portfolio.getAccountID();
 			double total = portfolio.getTotal();
 			Account account = null;
 			if (useAccount) try {
 				logger.fine("Calling AccountClient.getAccount()");
-				account = accountClient.getAccount(jwt, owner, total);
+				account = accountClient.getAccount(jwt, accountID, total);
 			} catch (Throwable t) {
 				logException(t);
 			}
@@ -240,8 +244,8 @@ public class BrokerService extends Application {
 		String jwt = request.getHeader("Authorization");
 
 		String result = "Unknown";
-		Portfolio portfolio = portfolioClient.getPortfolio(jwt, owner); //throws a 404 exception if not present
-		if (portfolio!=null) {
+		Portfolio portfolio = portfolioClient.getPortfolio(jwt, owner, true); //throws a 404 exception if not present
+		if (portfolio != null) {
 			Double portfolioValue = portfolio.getTotal();
 
 			try {
@@ -265,9 +269,14 @@ public class BrokerService extends Application {
 		String jwt = request.getHeader("Authorization");
 
 		double commission = 0.0;
+		String accountID = null;
 		if (useAccount) try {
+			logger.fine("Calling PortfolioClient.getPortfolio() to get accountID in updateBroker()");
+			portfolio = portfolioClient.getPortfolio(jwt, owner, false); //throws a 404 if it doesn't exist
+			accountID = portfolio.getAccountID();
+
 			logger.fine("Calling AccountClient.getAccount() to get commission in updateBroker()");
-			account = accountClient.getAccount(jwt, owner, DONT_RECALCULATE);
+			account = accountClient.getAccount(jwt, accountID, DONT_RECALCULATE);
 			commission = account.getNextCommission();
 		} catch (Throwable t) {
 			logException(t);
@@ -282,7 +291,7 @@ public class BrokerService extends Application {
 			account = null;
 			if (useAccount) try {
 				logger.fine("Calling AccountClient.updateAccount()");
-				account = accountClient.updateAccount(jwt, owner, total);
+				account = accountClient.updateAccount(jwt, accountID, total);
 			} catch (Throwable t) {
 				logException(t);
 			}
@@ -311,8 +320,9 @@ public class BrokerService extends Application {
 		if (portfolio!=null) {
 			Account account = null;
 			if (useAccount) try {
+				String accountID = portfolio.getAccountID();
 				logger.fine("Calling AccountClient.deleteAccount()");
-				account = accountClient.deleteAccount(jwt, owner);
+				account = accountClient.deleteAccount(jwt, accountID);
 			} catch (Throwable t) {
 				logException(t);
 			}
