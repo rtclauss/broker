@@ -1,5 +1,5 @@
 /*
-       Copyright 2020 IBM Corp All Rights Reserved
+       Copyright 2020-2021 IBM Corp All Rights Reserved
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,32 +48,32 @@ public interface AccountClient {
 	public Account[] getAccounts(@HeaderParam("Authorization") String jwt);
 
 	@GET
-	@Path("/{owner}")
+	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Account getAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("total") double total);
+	public Account getAccount(@HeaderParam("Authorization") String jwt, @PathParam("id") String id, @QueryParam("total") double total);
 
 	@POST
-	@Path("/{owner}")
+	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Account createAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner);
+	public Account createAccount(@HeaderParam("Authorization") String jwt, @PathParam("id") String id);
 
 	@PUT
-	@Path("/{owner}")
+	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Account updateAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("total") double total);
+	public Account updateAccount(@HeaderParam("Authorization") String jwt, @PathParam("id") String id, @QueryParam("total") double total);
 
 	@DELETE
-	@Path("/{owner}")
+	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Account deleteAccount(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner);
+	public Account deleteAccount(@HeaderParam("Authorization") String jwt, @PathParam("id") String id);
 
 	@POST
-	@Path("/{owner}/feedback")
+	@Path("/{id}/feedback")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Feedback submitFeedback(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, WatsonInput input);
+	public Feedback submitFeedback(@HeaderParam("Authorization") String jwt, @PathParam("id") String id, WatsonInput input);
 }
