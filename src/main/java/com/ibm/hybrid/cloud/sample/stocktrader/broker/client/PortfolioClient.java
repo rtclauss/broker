@@ -54,7 +54,7 @@ public interface PortfolioClient {
 	@GET
 	@Path("/{owner}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Portfolio getPortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("immutable") boolean immutable;
+	public Portfolio getPortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner, @QueryParam("immutable") boolean immutable);
 
 	@PUT
 	@Path("/{owner}")
