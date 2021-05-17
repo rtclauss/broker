@@ -275,7 +275,7 @@ public class BrokerService extends Application {
 				logException(t);
 			}
 		} else {
-			logger.warning("Portfolio not found to get returns for +"owner);
+			logger.warning("Portfolio not found to get returns for "+owner);
 		}
 		return result;
 	}
