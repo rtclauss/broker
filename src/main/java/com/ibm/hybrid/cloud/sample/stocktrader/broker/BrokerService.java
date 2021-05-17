@@ -79,6 +79,7 @@ public class BrokerService extends Application {
 
 	private static boolean useAccount = false;
 	private static boolean useS3 = false;
+	private static boolean useCQRS = false;
 	private static boolean initialized = false;
 	private static boolean staticInitialized = false;
 
@@ -92,6 +93,10 @@ public class BrokerService extends Application {
 		logger.info("Account microservice enabled: " + useAccount);
 
 		useS3 = Boolean.parseBoolean(System.getenv("S3_ENABLED"));
+		logger.info("S3 enabled: " + useS3);
+
+		useCQRS = Boolean.parseBoolean(System.getenv("CQRS_ENABLED"));
+		logger.info("CQRS enabled: " + useCQRS);
 
 		String mpUrlPropName = PortfolioClient.class.getName() + "/mp-rest/url";
 		String urlFromEnv = System.getenv("PORTFOLIO_URL");
@@ -128,6 +133,10 @@ public class BrokerService extends Application {
 	public Broker[] getBrokers(@Context HttpServletRequest request) {
 		String jwt = request.getHeader("Authorization");
 
+		if (useCQRS) {
+			logger.info("getBrokers: Placeholder for when CQRS support is added");
+		}
+
 		logger.fine("Calling PortfolioClient.getPortfolios()");
 		Portfolio[] portfolios = portfolioClient.getPortfolios(jwt);
 
@@ -159,11 +168,15 @@ public class BrokerService extends Application {
 					account = accounts[innerIndex];
 					if (owner.equals(account.getOwner())) {
 						brokers[outerIndex] = new Broker(portfolio, account);
+						logger.finer("Found account corresponding to the portfolio for "+owner);
 						break;
 					}
 					account = null;
 				}
-				if (account==null) brokers[outerIndex] = new Broker(portfolio, null);
+				if (account==null) {
+					logger.finer("Did not find account corresponding to the portfolio for "+owner);
+					brokers[outerIndex] = new Broker(portfolio, null);
+				}
 			}
 		}
 		
@@ -214,6 +227,10 @@ public class BrokerService extends Application {
 		Portfolio portfolio = null;
 		String jwt = request.getHeader("Authorization");
 
+		if (useCQRS) {
+			logger.info("getBroker: Placeholder for when CQRS support is added");
+		}
+
 		logger.fine("Calling PortfolioClient.getPortfolio()");
 		portfolio = portfolioClient.getPortfolio(jwt, owner, false);
 
@@ -225,6 +242,7 @@ public class BrokerService extends Application {
 			if (useAccount) try {
 				logger.fine("Calling AccountClient.getAccount()");
 				account = accountClient.getAccount(jwt, accountID, total);
+				if (account == null) logger.warning("Account not found for "+owner);
 			} catch (Throwable t) {
 				logException(t);
 			}
@@ -243,6 +261,7 @@ public class BrokerService extends Application {
 	public String getPortfolioReturns(@PathParam("owner") String owner, @Context HttpServletRequest request) {
 		String jwt = request.getHeader("Authorization");
 
+		logger.fine("Getting portfolio returns");
 		String result = "Unknown";
 		Portfolio portfolio = portfolioClient.getPortfolio(jwt, owner, true); //throws a 404 exception if not present
 		if (portfolio != null) {
@@ -250,10 +269,13 @@ public class BrokerService extends Application {
 
 			try {
 				result = tradeHistoryClient.getReturns(jwt, owner, portfolioValue);
+				logger.fine("Got portfolio returns for "+owner);
 			} catch (Throwable t) {
 				logger.info("Unable to invoke TradeHistory.  This is an optional microservice and the following exception is expected if it is not deployed");
 				logException(t);
 			}
+		} else {
+			logger.warning("Portfolio not found to get returns for +"owner);
 		}
 		return result;
 	}
