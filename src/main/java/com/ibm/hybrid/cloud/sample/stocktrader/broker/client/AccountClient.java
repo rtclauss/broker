@@ -20,6 +20,8 @@ import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Account;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.Feedback;
 import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.WatsonInput;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -38,6 +40,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @ApplicationPath("/")
 @Path("/")
+@ApplicationScoped
 @RegisterRestClient
 /** mpRestClient "remote" interface for the Account microservice */
 public interface AccountClient {
