@@ -1,0 +1,128 @@
+# This workflow will build and push a new container image to GCP GKE,
+# and then will deploy a new task definition to Cloud build, when a release is created
+#
+# To use this workflow, you will need to complete the following set-up steps:
+#
+# 1. Create an Artifacts repository to store your images.
+#    For exemple: gcloud artifacts repositories create cjot-stocktrader-pipeline1-repository \
+#                 --repository-format=docker --location=us-central1
+#    Replace the value of `GCP_REPOSITORY` in the workflow below with your repository's name.
+#    Replace the value of `aws-region` in the workflow below with your repository's region.
+#
+# 2. Create an ECS task definition, an ECS cluster, and an ECS service.  ???
+#    For example, follow the Getting Started guide on the ECS console:
+#      https://us-east-2.console.aws.amazon.com/ecs/home?region=us-east-2#/firstRun
+#    Replace the values for `service` and `cluster` in the workflow below with your service and cluster names.
+#
+# 3. Store your ECS task definition as a JSON file in your repository. ???
+#    The format should follow the output of `aws ecs register-task-definition --generate-cli-skeleton`.
+#    Replace the value of `task-definition` in the workflow below with your JSON file's name.
+#    Replace the value of `container-name` in the workflow below with the name of the container
+#    in the `containerDefinitions` section of the task definition.
+#
+# 4. Store an IAM user access key in GitHub Actions secrets named `GCP_CREDENTIALS`.
+#    See the documentation for each action used below for the recommended IAM policies for this IAM user,
+#    and best practices on handling the access key credentials.
+
+name: Build, Push to GCP repository
+
+on:
+  push:
+    branches:
+      - master 
+    paths-ignore:
+    - '.github/**' 
+  release:
+    types: [created]
+
+#  setup-build-publish:
+jobs:
+  setup-build-publish:
+    - name: Setup, Build, Publish
+      runs-on: ubuntu-latest
+    #  environment: production
+   steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    # Setup java
+    - name: Setup Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+
+    # Build and package app
+    - name: Build and package app
+      id: unit-test
+      run: |
+        mvn clean package
+        # verify
+        # cat target/failsafe-reports/failsafe-summary.xml
+        # grep -q "<failures>0</failures>" target/failsafe-reports/failsafe-summary.xml
+        # code=$?
+        # echo "ret: $code"
+        # if [[ $code -eq 0  ]]; then
+        #  echo "success"
+        #  echo '::set-output name=unit-test-result::success'
+        # else
+        #  echo "failed"
+        #  echo '::set-output name=unit-test-result::failed'
+        # fi
+        echo '::set-output name=unit-test-result::success'
+
+# Configure Workload Identity Federation and generate an access token.  ==> Requires Organization config
+#    - id: 'auth'
+#     name: 'Authenticate to Google Cloud'
+#      uses: 'google-github-actions/auth@v0'
+#     with:
+#        workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+#     service_account: 'sa-cloudbuild@cloud-engagement-hub.iam.gserviceaccount.com'
+
+# Alternative option - authentication via credentials json
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with: 
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    # Setup gcloud CLI
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication (https://cloud.google.com/artifact-registry/docs/docker/authentication)
+    - name: Docker configuration
+      env:
+        - GAR_LOCATION: us-central
+      run: |-
+        gcloud --quiet auth configure-docker $GAR_LOCATION-docker.pkg.dev
+  
+    # Get the GKE credentials so we can deploy to the cluster
+    - name: Set up GKE credentials
+      env:
+        - GKE_CLUSTER: gcp-experimental
+        - GKE_ZONE: us-central1-a
+      run: |-
+        gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+    - name: Login to GCP repository
+      id: login-gcp
+      uses: gcp-actions/gcp-register-login@v1
+
+    - name: Build, tag, and push image to GCP repository
+      id: build-image
+      env:
+        - GCP_REGISTRY: ${{ steps.login-gcp.outputs.registry }}
+        - GCP_REPOSITORY: cjot-stocktrader-pipeline1-repository
+        - IMAGE_TAG: ${{ github.sha }}
+        - GITHUB_SHA: ${{ github.sha }}
+        - GITHUB_REF: ${{ github.ref }}
+
+      run: |
+        # Build a docker container and
+        # push it to GCP repository so that it can
+        # be deployed to GKE.
+        docker build -t $GCP_REGISTRY/$GCP_REPOSITORY:$IMAGE_TAG \
+          --build-arg GITHUB_SHA="$GITHUB_SHA" \
+          --build-arg GITHUB_REF="$GITHUB_REF" .
+        docker push $GCP_REGISTRY/$GCP_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$GCP_REGISTRY/$GCP_REPOSITORY:$IMAGE_TAG"
+ 
