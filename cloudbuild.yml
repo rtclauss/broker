@@ -1,5 +1,4 @@
-# This workflow will build and push a new container image to GCP GKE,
-# ???? and then will deploy a new task definition to Amazon ECS, when a release is created  ==> This fits to Cloud Build Triggers
+# This workflow will build and push a new container image to GCP GKE
 #
 # To use this workflow, you will need to complete the following set-up steps:
 #
@@ -10,20 +9,10 @@
 #    Replace the value of `GCP_REPOSITORY` in the workflow below with your repository's name.
 #    Replace the value of `gcp-region` in the workflow below with your repository's region.
 #
-# ??? 2. Create an ECS task definition, an ECS cluster, and an ECS service.  ==> This fits to Cloud Build Triggers
-#    For example, follow the Getting Started guide on the ECS console:
-#      https://us-east-2.console.aws.amazon.com/ecs/home?region=us-east-2#/firstRun
-#    Replace the values for `service` and `cluster` in the workflow below with your service and cluster names.
+# 2. Create a Cloud Build Trigger to launch the CI process.
 #
-# ??? 3. Store your ECS task definition as a JSON file in your repository.  ==> This fits to Cloud Build Triggers
-#    The format should follow the output of `aws ecs register-task-definition --generate-cli-skeleton`.
-#    Replace the value of `task-definition` in the workflow below with your JSON file's name.
-#    Replace the value of `container-name` in the workflow below with the name of the container
-#    in the `containerDefinitions` section of the task definition.
+# 3. Store your ECS task definition as a JSON file in your repository. ???
 #
-# 4. Store an IAM user access key in GitHub Actions secrets named `GCP_CREDENTIALS`.
-#    See the documentation for each action used below for the recommended IAM policies for this IAM user,
-#    and best practices on handling the access key credentials.
 
 steps:
 
@@ -42,40 +31,16 @@ steps:
     entrypoint: mvn
     args: ['package','-Dmaven.test.skip=true','-Dmaven.test.skip=true']
 
-# Authentication via credentials json
-#steps:
-#  - name: 'Authenticate to Google Cloud'
-#  - id: 'auth'
-#    uses: 'google-github-actions/auth@v0'
-#    with:
-#    credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-#  - name: Docker configuration
-#    run: |-
-#      echo ${{steps.auth.outputs.access_token}} | docker login -u oauth2accesstoken --password-stdin https://us-west1-docker.pkg.dev
-
 # Build a docker container and push it to GCP repository
 #steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: Build
-#  args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest', '.' ]
-#  args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:am123456', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest', '.' ]
-    args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest', '.' ]
+#    args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest', '.' ]
+    args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA', '.' ]
 #substitutions:
 #    SHORT_SHA: world
 images:
-#- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:am123456'
-#- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA'
-- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest'
+- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA'
+#- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest'
 timeout: 3600s
-
-# This step pushes the image to Artifact Registry
-#steps:
-#- name: 'gcr.io/cloud-builders/docker'
-#  id: Push
-#  args:
-#  - 'push'
-#  - 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:latest'
-#  - 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA'
-
-# This always runs even if the install command fails
 
