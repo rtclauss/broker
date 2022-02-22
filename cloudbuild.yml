@@ -15,6 +15,10 @@
 #
 env:
 -PROJECT_ID=cloud-engagement-hub
+-GCP_ARTIFACTS=cjot-stocktrader-repo
+-GCP_SOURCE_REPO=stocktrader-broker-st-pipeline1-env
+-ST_APP_SERVICE=broker
+-ST_APP_CONFIG=stocktrader-instance-cloudsql-ssl-gcr-rediss-kafka-1
 
 steps:
 
@@ -37,23 +41,23 @@ steps:
 #steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: Build
-    args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA', '.' ]
-#substitutions:
-#    SHORT_SHA: world
+#    args: [ 'build', '-t', 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA', '.' ]
+    args: [ 'build', '-t', 'us-west1-docker.pkg.dev/$PROJECT_ID/$GCP_ARTIFACTS/$ST_APP_SERVICE:$SHORT_SHA', '.' ]
 images:
-- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA'
+#- 'us-west1-docker.pkg.dev/cloud-engagement-hub/cjot-stocktrader-repo/broker:$SHORT_SHA'
+- 'us-west1-docker.pkg.dev/$PROJECT_ID/$GCP_ARTIFACTS/$ST_APP_SERVICE:$SHORT_SHA'
 timeout: 3600s
 
 # [START cloudbuild-trigger-cd]
-# This step clones the stocktrader-broker-st-pipeline1-env repository
+# This step clones the $GCP_SOURCE_REPO repository
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Clone env repository
   entrypoint: /bin/sh
   args:
   - '-c'
   - |
-    gcloud source repos clone stocktrader-broker-st-pipeline1-env && \
-    cd stocktrader-broker-st-pipeline1-env && \
+    gcloud source repos clone $GCP_SOURCE_REPO-env && \
+    cd $GCP_SOURCE_REPO-env && \
     git checkout candidate && \
     git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)')
 # This step generates the new manifest
@@ -63,8 +67,8 @@ timeout: 3600s
   args:
   - '-c'
   - |
-     sed "s/GOOGLE_CLOUD_PROJECT/${PROJECT_ID}/g" stocktrader-instance-cloudsql-ssl-gcr-rediss-kafka-1.yaml.tpl | \
-     sed "s/COMMIT_SHA/${SHORT_SHA}/g" > stocktrader-broker-st-pipeline1-env/stocktrader-instance-cloudsql-ssl-gcr-rediss-kafka-1.yaml
+     sed "s/GOOGLE_CLOUD_PROJECT/${PROJECT_ID}/g" ${ST_APP_CONFIG}.yaml.tpl | \
+     sed "s/COMMIT_SHA/${SHORT_SHA}/g" > ${GCP_SOURCE_REPO}/${ST_APP_CONFIG}.yaml
 # This step pushes the manifest back to stocktrader-broker-st-pipeline1-env
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Push manifest
@@ -73,10 +77,10 @@ timeout: 3600s
   - '-c'
   - |
     set -x && \
-    cd stocktrader-broker-st-pipeline1-env && \
-    git add stocktrader-instance-cloudsql-ssl-gcr-rediss-kafka-1.yaml && \
-    git commit -m "Deploying image us-central1-docker.pkg.dev/$PROJECT_ID/my-repository/stocktrader-broker-st-pipeline1:${SHORT_SHA}
-    Built from commit ${COMMIT_SHA} of repository stocktrader-broker-st-pipeline1-app
+    cd $GCP_SOURCE_REPO-env && \
+    git add $ST_APP_CONFIG.yaml && \
+    git commit -m "Deploying image us-west1-docker.pkg.dev/$PROJECT_ID/$GCP_ARTIFACTS/$ST_APP_SERVICE:${SHORT_SHA}
+    Built from commit ${COMMIT_SHA} of repository $GCP_SOURCE_REPO-app
     Author: $(git log --format='%an <%ae>' -n 1 HEAD)" && \
     git push origin candidate
 # [END cloudbuild-trigger-cd]
