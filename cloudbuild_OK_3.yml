@@ -35,7 +35,7 @@ steps:
   args:
   - '-c'
   - |
-    gcloud source repos clone stocktrader-broker-st-pipeline1-env && \
+    gcloud source repos clone cjot-stocktrader-broker-st-pipeline1-env && \
     cd stocktrader-broker-st-pipeline1-env && \
     git checkout candidate && \
     git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)')
@@ -61,7 +61,7 @@ steps:
     cd stocktrader-broker-st-pipeline1 && \
     git add stocktrader-instance-cloudsql-ssl-gcr-rediss-kafka-1.yaml && \
     git commit -m "Deploying image us-west1-docker.pkg.dev/$PROJECT_ID/cjot-stocktrader-repo/broker:${SHORT_SHA}
-    Built from commit ${COMMIT_SHA} of repository stocktrader-broker-st-pipeline1-app
+    Built from commit ${COMMIT_SHA} of repository scjot-stocktrader-broker-st-pipeline1-app
     Author: $(git log --format='%an <%ae>' -n 1 HEAD)" && \
     git push origin candidate
 
