@@ -1,12 +1,1 @@
-{
-  "type": "service_account",
-  "project_id": "cloud-engagement-hub",
-  "private_key_id": "49653224e281454296fd6707538e8133bdca7599",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC3Z03kE7WRyqR2\nkHFGk6+k3bZUbCXKExpns6BWUsriQX2Mlu792xYnDaeppP+wwEGcQgy9uOyiiyoD\nJqe5BIyAl+WgsZW05zuLB5Rn86N6iOKIREy9QVP9/iz2ubHEem/+OLbdqQfiAqIN\neZT8l6PDM0o5Nn2RTlGMTpEzMNM87gCyKiNaIuIIy/xgSmWMYAZZnLMiNEaNGWNc\nV0fGd1jn+suJeLLDHQm9vMtewHO9Kd0ufKggbHI5wlAi56jhpZf57z2j0+6Retmq\n6WIbUDO3n6cosNY5B7ilg5NMDxck1GiphNQzts1TftzG/vcaMCezawwdKwswld46\nbvCZd5+vAgMBAAECggEACty98r+uFcvsMK9+XgE6Omf9OAPNuymlezXazbIKnRrm\n3jBESFm09qwq3XPNxwCkAiaxTX1J2pimbNhZv64Cykz0xy8tYDD/yEyzH/MAoC3C\nSPLOnrjjShxHOnemDS55OpPOVNOBiYPBaE3moo0yoEmF4FyXVEdQsiAnHmKKaEXQ\nrvFRmDZZreBHTszZed/iKPy0WAc9rIPKUMBXUdfublcsqAPdFyUhF3NGGvYruRVV\nCUjtVyoUWe4ZjvvEeEotDJX55ltdS1hLaqGVi3vIl3EiSeB74vxKMROlLVTNib3G\n+umMULvUJYUSsikUHlWS1VZcGnWjs/56JvHXVQXSXQKBgQDZqZ6Ujk2Z4eVg7dJI\nNeApV1HyeMPVw6dT9URVWcwZ4g7NW2oNCudXo6PL/y8RLzq1Y0Q5s+hHW9dZroNW\noTLUaSWB+TOrUnrEBjrcofOAXQlbwT6KNn35vNQ6QGWGQNu4KGfX5M0wy7EUNPk0\nRgyvh3bktwlFCXGY2VQjMH05VQKBgQDXtPLOX6wiPxvR4wrHHxMR8gsV03I9sFHJ\ndK7j5wehJQMcJLkydu8Tk5f0giR7ohRYdceTc3Jb3rZl8bc6eLr2CTfYEhcaAtgy\nu91N1mbA7OyDmJjc0E1zw2YW3MU+BDwtvP9bdgvyxnIPdJbGdj2Te4OsaCkVjXUO\nDJXSM2Fk8wKBgADyUOM6fzHlHpc+UYTI3zGu1IdmaQub7zVZQrPQUSfnqMLR2/M0\nke76ojK36F99whaZ2OkbVC5DQvt728xbpRnxXx1ilQvwruH9WPIurh1nyiug+oGl\nXQTiAlZCg26DB7GUU2dH8nB84kdBN7g3ecSlpSm3dg3bzaepgkko49KFAoGBALzL\nEvito+sVcTPyk6xT9kzum+Uue/6iI/M+vRObUYIo8t/fBHi2v+lSdNz8SxIqecQy\n0cqscJsYAmyXctcqc/iDeO0UaEPL2Y4N/1PxI14X/6nuFVyutBtuGhxIfhoZetJN\naPKUD0EdjxcX5B8vvhUnNcfgIpVKifkR6s9fSQ8hAoGAIg6VCMi24iVbfvNzY19v\nV/7x4NOxU1YjmoqbPxz3WEX98/42ZB+VLuVIQXf+U7ng7OecYcqgWx8JcQnuYe7p\nwIvTfQcTrBJKWQ3TAMy0NksFemGmX8aJXTwvtsynM664HpI9uQkPp5vmoiWpSBGu\nV/pqCbe3kAV8JQDSwHjuIJI=\n-----END PRIVATE KEY-----\n",
-  "client_email": "sa-cloudbuild@cloud-engagement-hub.iam.gserviceaccount.com",
-  "client_id": "107743760042829172312",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/sa-cloudbuild%40cloud-engagement-hub.iam.gserviceaccount.com"
-}
+
