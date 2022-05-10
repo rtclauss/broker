@@ -30,8 +30,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 //Logging (JSR 47)
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 //CDI 2.0
 import javax.inject.Inject;
@@ -142,9 +148,10 @@ public class BrokerService extends Application {
 
 		int portfolioCount=0;
 		Broker[] brokers = null;
+		Set<Broker> brokersSet = new HashSet<>();
 		if (portfolios!=null) {
 			portfolioCount = portfolios.length;
-			int accountCount=0;
+			int accountCount = 0;
 
 			brokers = new Broker[portfolioCount];
 			Account[] accounts = new Account[portfolioCount];
@@ -157,32 +164,43 @@ public class BrokerService extends Application {
 				logException(t);
 			}
 
-			//Since the accounts are likely not in the same order as the portfolios, need to match them up
-			//TODO: Consider making both use an "ORDER BY owner", so we don't have to do this
-			Portfolio portfolio = null;
-			for (int outerIndex=0; outerIndex<portfolioCount; outerIndex++) {
-				portfolio = portfolios[outerIndex];
-				String owner = portfolio.getOwner();
-				Account account = null;
-				for (int innerIndex=0; innerIndex<accountCount; innerIndex++) {
-					account = accounts[innerIndex];
-					if (owner.equals(account.getOwner())) {
-						brokers[outerIndex] = new Broker(portfolio, account);
-						logger.finer("Found account corresponding to the portfolio for "+owner);
-						break;
-					}
-					account = null;
-				}
-				if (account==null) {
-					logger.finer("Did not find account corresponding to the portfolio for "+owner);
-					brokers[outerIndex] = new Broker(portfolio, null);
-				}
-			}
+			// Match up the accounts and portfolios
+			// TODO: Pagination should reduce the amount of work to do here
+			Map<String, Account> mapOfAccounts = Arrays.stream(accounts).collect(Collectors.toMap(Account::getOwner, account -> account));
+			Set<String> accountOwners = Arrays.stream(accounts).map(Account::getOwner).collect(Collectors.toSet());
+
+			brokersSet = Arrays.stream(portfolios)
+					.parallel()
+					.filter(portfolio -> accountOwners.contains(portfolio.getOwner()))
+					.map(portfolio -> {
+						String owner = portfolio.getOwner();
+						// Don't log here, you'll get a NPE if you uncomment the following line
+						// logger.finer("Found account corresponding to the portfolio for " + owner);
+						return new Broker(portfolio, mapOfAccounts.get(owner));
+					})
+					.collect(Collectors.toSet());
+
+			// Now handle the cases where there is no matching account-portfolio mapping
+			brokersSet.addAll(Arrays.stream(portfolios)
+					.parallel()
+					.filter(Predicate.not(portfolio -> accountOwners.contains(portfolio.getOwner())))
+					.map(portfolio -> {
+						var owner = portfolio.getOwner();
+						// Don't log here, you'll get a NPE
+						// logger.finer("Did not find account corresponding to the portfolio for " + owner);
+						return new Broker(portfolio, null);
+					})
+					.collect(Collectors.toSet()));
 		}
 		
 		logger.fine("Returning "+portfolioCount+" portfolios");
 
-		return brokers;
+		if(brokersSet != null) {
+			brokers = brokersSet.stream().toArray(Broker[]::new);
+			return brokers;
+		} else {
+			return null;
+		}
 	}
 
 	@POST
