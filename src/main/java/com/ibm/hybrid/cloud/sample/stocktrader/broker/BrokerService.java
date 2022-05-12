@@ -166,26 +166,25 @@ public class BrokerService extends Application {
 
 			// Match up the accounts and portfolios
 			// TODO: Pagination should reduce the amount of work to do here
-			Map<String, Account> mapOfAccounts = Arrays.stream(accounts).collect(Collectors.toMap(Account::getOwner, account -> account));
-			Set<String> accountOwners = Arrays.stream(accounts).map(Account::getOwner).collect(Collectors.toSet());
+			Map<String, Account> mapOfAccounts = Arrays.stream(accounts).collect(Collectors.toMap(Account::get_id, account -> account));
+			Set<String> accountIds = Arrays.stream(accounts).map(Account::get_id).collect(Collectors.toSet());
 
 			brokersSet = Arrays.stream(portfolios)
 					.parallel()
-					.filter(portfolio -> accountOwners.contains(portfolio.getOwner()))
+					.filter(portfolio -> accountIds.contains(portfolio.getAccountID()))
 					.map(portfolio -> {
-						String owner = portfolio.getOwner();
+						String ownerId = portfolio.getAccountID();
 						// Don't log here, you'll get a NPE if you uncomment the following line
 						// logger.finer("Found account corresponding to the portfolio for " + owner);
-						return new Broker(portfolio, mapOfAccounts.get(owner));
+						return new Broker(portfolio, mapOfAccounts.get(ownerId));
 					})
 					.collect(Collectors.toSet());
 
 			// Now handle the cases where there is no matching account-portfolio mapping
 			brokersSet.addAll(Arrays.stream(portfolios)
 					.parallel()
-					.filter(Predicate.not(portfolio -> accountOwners.contains(portfolio.getOwner())))
+					.filter(Predicate.not(portfolio -> accountIds.contains(portfolio.getAccountID())))
 					.map(portfolio -> {
-						var owner = portfolio.getOwner();
 						// Don't log here, you'll get a NPE
 						// logger.finer("Did not find account corresponding to the portfolio for " + owner);
 						return new Broker(portfolio, null);
