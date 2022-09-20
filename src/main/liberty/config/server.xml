@@ -16,10 +16,12 @@
 
 <server description="Broker server">
     <featureManager>
-        <feature>microProfile-4.1</feature>
-        <feature>appSecurity-2.0</feature>
+        <feature>microProfile-5.0</feature>
+        <feature>appSecurity-4.0</feature>
         <feature>monitor-1.0</feature>
 <!--    <feature>logstashCollector-1.1</feature> -->
+<!--        Backleveled version of Smallrye. Don't use until we get to v2 of this feature (or later) -->
+<!--        <feature>mpGraphQL-1.0</feature>-->
     </featureManager>
 
     <variable name="TRACE_SPEC" defaultValue="*=info"/>
@@ -84,5 +86,7 @@
                 <special-subject type="ALL_AUTHENTICATED_USERS" id="IBMid"/>
             </security-role>
         </application-bnd>
+        <!-- needed for graphql smallrye class access -->
+        <classloader apiTypeVisibility="+third-party"/>
     </webApplication>
 </server>
