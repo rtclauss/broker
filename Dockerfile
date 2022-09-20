@@ -23,7 +23,8 @@
 # RUN mvn -f /usr/pom.xml clean package
 
 # FROM openliberty/open-liberty:kernel-slim-java11-openj9-ubi
-FROM openliberty/open-liberty:21.0.0.12-full-java11-openj9-ubi
+# temporary move to Java 11 for https://github.com/OpenLiberty/open-liberty/issues/22361
+FROM openliberty/open-liberty:22.0.0.9-full-java11-openj9-ubi
 
 # ARG extract_keycloak_cert
 USER root
