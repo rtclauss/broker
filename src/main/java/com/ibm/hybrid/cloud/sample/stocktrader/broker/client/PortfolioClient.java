@@ -37,6 +37,9 @@ import jakarta.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import java.sql.SQLException;
+import java.util.List;
+
 
 @ApplicationPath("/")
 @Path("/")
@@ -48,6 +51,11 @@ public interface PortfolioClient {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Portfolio[] getPortfolios(@HeaderParam("Authorization") String jwt);
+
+	@GET
+	@Path("/{page}/{pageSize}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Portfolio> getPortfoliosByPage(@HeaderParam("Authorization") String jwt, @PathParam("page") Integer page, @PathParam("pageSize")Integer pageSize);
 
 	@POST
 	@Path("/{owner}")
@@ -68,4 +76,5 @@ public interface PortfolioClient {
 	@Path("/{owner}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Portfolio deletePortfolio(@HeaderParam("Authorization") String jwt, @PathParam("owner") String owner);
+
 }

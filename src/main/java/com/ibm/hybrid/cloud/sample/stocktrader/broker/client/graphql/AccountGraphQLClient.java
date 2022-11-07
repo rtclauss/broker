@@ -6,6 +6,7 @@ import com.ibm.hybrid.cloud.sample.stocktrader.broker.json.WatsonInput;
 
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
 import io.smallrye.graphql.client.typesafe.api.Header;
+import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.Query;
@@ -30,11 +31,14 @@ public interface AccountGraphQLClient {
     @Query
     public List<Account> allAccountsByPage(@Header(name = "Authorization") String jwt, @Name("pageNumber") Integer pageNumber, @Name("pageSize") Integer pageSize);
 
+    @Query("retrieveAccountsByOwner")
+    public List<Account> getAccountsByOwner(@Header(name = "Authorization") String jwt, @Name("owners") List<String> owners);
+
     @Query
     public Account retrieveAccountById(@Header(name = "Authorization") String jwt, @Name("ownerId") String ownerId);
 
     @Query
-    public List<Account> retrieveAccountsByOwnerName(@Header(name = "Authorization") String jwt, @Name("owner") String ownerName);
+    public List<Account> retrieveAccountByOwnerName(@Header(name = "Authorization") String jwt, @Name("owner") String ownerName);
 
 
     // Mutations

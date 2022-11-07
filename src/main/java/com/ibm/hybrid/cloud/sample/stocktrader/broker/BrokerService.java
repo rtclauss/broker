@@ -250,7 +250,98 @@ public class BrokerService extends Application {
         logger.fine("Returning " + portfolioCount + " portfolios");
 
         if (brokersSet != null) {
-            brokers = brokersSet.stream().toArray(Broker[]::new);
+            // brokers = brokersSet.stream().toArray(Broker[]::new);
+            // Sort the list for deterministic order
+            brokers = brokersSet.parallelStream().sorted(Comparator.comparing(Broker::getOwner)).toArray(Broker[]::new);
+            return brokers;
+        } else {
+            return null;
+        }
+    }
+
+    @GET
+    @Path("/{page}/{pageSize}")
+    @Produces(MediaType.APPLICATION_JSON)
+//	@RolesAllowed({"StockTrader", "StockViewer"}) //Couldn't get this to work; had to do it through the web.xml instead :(
+    @Timed(name = "getBrokersPaginationTimer", description = "How long does it take retrieve all pages of broker data from Portfolio and Account")
+    public Broker[] getBrokersPagination(@PathParam("page") Integer page, @PathParam("pageSize") Integer pageSize, @Context HttpServletRequest request) {
+        String jwt = request.getHeader("Authorization");
+
+        if (useCQRS) {
+            logger.info("getBrokers: Placeholder for when CQRS support is added");
+        }
+
+        logger.fine("Calling PortfolioClient.getPortfoliosByPage(page, pageSize)");
+        List<Portfolio> portfolios;
+        Span getAllPortfoliosSpan = tracer.buildSpan("BrokerService.getBrokers PortfolioClient.getPortfoliosByPage(page, pageSize)").start();
+        try (Scope childScope = tracer.scopeManager().activate(getAllPortfoliosSpan)) {
+            portfolios = portfolioClient.getPortfoliosByPage(jwt, page, pageSize);
+        } finally {
+            getAllPortfoliosSpan.finish();
+        }
+
+        int portfolioCount = 0;
+        Broker[] brokers = null;
+        Set<Broker> brokersSet = new HashSet<>();
+        if (portfolios != null) {
+            portfolioCount = portfolios.size();
+            int accountCount = 0;
+
+            brokers = new Broker[portfolioCount];
+            List<Account> accounts = new ArrayList<>(portfolioCount);
+
+            if (useAccount) try {
+                var owners = portfolios.parallelStream().map(Portfolio::getOwner).collect(Collectors.toList());
+                logger.fine("Calling GraphQL accountGraphQLClient.getAccountsByOwner(jwt, owners)");
+                Span getAllAccountsSpan = tracer.buildSpan("BrokerService.getBrokers accountGraphQLClient.getAccountsByOwner(jwt, owners)").start();
+                try (Scope childScope = tracer.scopeManager().activate(getAllAccountsSpan)) {
+                    accounts = accountGraphQLClient.getAccountsByOwner(jwt, owners);
+                } finally {
+                    getAllAccountsSpan.finish();
+                }
+                accountCount = accounts.size();
+            } catch (Throwable t) {
+                logException(t);
+            }
+
+            // Match up the accounts and portfolios
+            Span mapPortfoliosToAccountsSpan = tracer.buildSpan("BrokerService.getBrokers parallel Map portfolios to account").start();
+            try (Scope childScope = tracer.scopeManager().activate(mapPortfoliosToAccountsSpan)) {
+                Map<String, Account> mapOfAccounts = accounts.stream().collect(Collectors.toMap(Account::getId, account -> account));
+                Set<String> accountIds = accounts.stream().map(Account::getId).collect(Collectors.toSet());
+
+                brokersSet = portfolios.stream()
+                        .parallel()
+                        .filter(portfolio -> accountIds.contains(portfolio.getAccountID()))
+                        .map(portfolio -> {
+                            String ownerId = portfolio.getAccountID();
+                            // Don't log here, you'll get a NPE if you uncomment the following line
+                            // logger.finer("Found account corresponding to the portfolio for " + owner);
+                            return new Broker(portfolio, mapOfAccounts.get(ownerId));
+                        })
+                        .collect(Collectors.toSet());
+
+                // Now handle the cases where there is no matching account-portfolio mapping
+                brokersSet.addAll(portfolios.stream()
+                        .parallel()
+                        .filter(Predicate.not(portfolio -> accountIds.contains(portfolio.getAccountID())))
+                        .map(portfolio -> {
+                            // Don't log here, you'll get a NPE
+                            // logger.finer("Did not find account corresponding to the portfolio for " + owner);
+                            return new Broker(portfolio, null);
+                        })
+                        .collect(Collectors.toSet()));
+            } finally {
+                mapPortfoliosToAccountsSpan.finish();
+            }
+        }
+
+        logger.fine("Returning " + portfolioCount + " portfolios");
+
+        if (brokersSet != null) {
+            // brokers = brokersSet.stream().toArray(Broker[]::new);
+            // Sort the list for deterministic order
+            brokers = brokersSet.parallelStream().sorted(Comparator.comparing(Broker::getOwner)).toArray(Broker[]::new);
             return brokers;
         } else {
             return null;
